@@ -12,11 +12,11 @@ class ExtractData:
 
     -> Class for handling different methods of data extraction.
     """
-    def __init__(self, file, mode, separator) -> None:
+    def __init__(self, file, mode: str, separator: str, trim_newln: bool) -> None:
         self.fd = open(file, mode)
         self.separator = separator
-        self.TRIM_NEWLINE = False # remove the trailing newline character at the end of the
-                                                            # last element of the line, if the element is included
+        self.trim_newline = trim_newln # remove the trailing newline character at the end of the
+                # last element of the line, if the element is included
 
     # to be used inside the class
     # separates file data into lines
@@ -70,7 +70,7 @@ class ExtractData:
                     continue
                 dict_values.append(split_ed[value-1])
             
-            if (self.TRIM_NEWLINE):
+            if (self.trim_newline):
                 for dict_value in dict_values[0]:
                     
                      # as the line element containing '\n' will be in the last element of the line
