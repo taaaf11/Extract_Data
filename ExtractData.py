@@ -12,10 +12,10 @@ class ExtractData:
 
     -> Class for handling different methods of data extraction.
     """
-    def __init__(self, file, mode: str, separator: str, trim_newln: bool) -> None:
-        self.fd = open(file, mode)
+    def __init__(self, file_name, mode: str, separator: str, trim_newline: bool) -> None:
+        self.fd = open(file_name, mode)
         self.separator = separator
-        self.trim_newline = trim_newln # remove the trailing newline character at the end of the
+        self.trim_newline = trim_newline # remove the trailing newline character at the end of the
                 # last item of the line, if the item is included
         
         self.json_indent = None # this variable is used cz problems occur when specified as parameter
@@ -39,6 +39,9 @@ class ExtractData:
             if line == '\n': # line is empty
                 continue
             lines.append(line)
+        
+        # reset the pointer to the start of the file in case of further function calls
+        self.fd.seek(0)
         
         if lines[-1] == '':
             lines.pop()
@@ -128,6 +131,12 @@ class ExtractData:
         """
         
         return tuple(self.as_list(item_num))
+    
+    def set_json_indent(self, indent_level: int) -> None:
+        """
+        Set json indent
+        """
+        self.json_indent = indent_level
     
     def as_json(self, key: int, *values):
         """
