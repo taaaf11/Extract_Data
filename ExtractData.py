@@ -41,7 +41,7 @@ class ExtractData:
             lines.append(line)
         
         if lines[-1] == '':
-            list().pop()
+            lines.pop()
 
         return lines
     
