@@ -144,6 +144,9 @@ class ExtractData:
         
         return json.dumps(self.as_dict(key, *values))
     
+    def close_(self) -> None:
+        self.fd.close()
+    
     def __eq__(self, __value: object) -> bool:
         return (self.file == __value.file) and (self.mode == __value.mode)
     
