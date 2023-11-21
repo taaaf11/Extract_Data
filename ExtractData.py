@@ -16,13 +16,16 @@ class ExtractData:
         self.fd = open(file, mode)
         self.separator = separator
         self.trim_newline = trim_newln # remove the trailing newline character at the end of the
-                # last element of the line, if the element is included
+                # last item of the line, if the item is included
+        
+        self.json_indent = None # this variable is used cz problems occur when specified as parameter
+                    # in as_json() function
 
     # to be used inside the class
     # separates file data into lines
     def _into_lines(self) -> list:
         """
-        Converts each line of the file to an element in the list.
+        Converts each line of the file to an item in the list.
         This list is returned.
         """
         eof = False
@@ -33,10 +36,12 @@ class ExtractData:
             line = self.fd.readline()
             if not line:
                 eof = True
+            if line == '\n': # line is empty
+                continue
             lines.append(line)
-
+        
         if lines[-1] == '':
-            del lines[-1]
+            list().pop()
 
         return lines
     
@@ -73,7 +78,7 @@ class ExtractData:
             if (self.trim_newline):
                 for dict_value in dict_values[0]:
                     
-                     # as the line element containing '\n' will be in the last element of the line
+                     # as the line item containing '\n' will be in the last item of the line
                      # no need of any further filtering
                     if dict_value[-1] == '\n':
                         dict_values[0].append(dict_value[:-1])
@@ -87,42 +92,42 @@ class ExtractData:
 
         return dictionary
 
-    def as_list(self, elem_num: int) -> list:
+    def as_list(self, item_num: int) -> list:
         """
         SYNOPSIS:
-            obj.as_list(elem_num)
+            obj.as_list(item_num)
             
-            -> Returns a list with elem_num-th "element" from delimited line.
+            -> Returns a list with item_num-th item from delimited line.
             -> This happens with all lines in given file.
         
         EXAMPLE:
             obj.as_list(3)
             
-            -> Add third "element" from each line of the given file
+            -> Add third item from each line of the given file
         """
         list_ = list()
 
         for line in self._into_lines():
             split_ed = line.split(self.separator)
-            list_.append(split_ed[elem_num-1])
+            list_.append(split_ed[item_num-1])
 
         return list_
 
-    def as_tuple(self, elem_num) -> tuple:
+    def as_tuple(self, item_num: int) -> tuple:
         """
         SYNOPSIS:
-              obj.as_list(elem_num)
+              obj.as_list(item_num)
 
-              -> Returns a list with elem_num-th "element" from delimited line.
+              -> Returns a list with item_num-th item from delimited line.
               -> This happens with all lines in given file.
 
         EXAMPLE:
               obj.as_list(3)
 
-              -> Add third "element" from each line of the given file
+              -> Add third item from each line of the given file
         """
         
-        return tuple(self.as_list(elem_num))
+        return tuple(self.as_list(item_num))
     
     def as_json(self, key: int, *values):
         """
@@ -142,9 +147,17 @@ class ExtractData:
             Added as list.
         """
         
-        return json.dumps(self.as_dict(key, *values))
+        # indenation is controlled by self.json_indent variable
+        if not (self.json_indent is None):
+            return json.dumps(self.as_dict(key, *values), indent=self.json_indent)
+        
+        else:
+            return json.dumps(self.as_dict(key, *values))
     
     def close_(self) -> None:
+        """
+        Close the opened file in object instantiation
+        """
         self.fd.close()
     
     def __eq__(self, __value: object) -> bool:
