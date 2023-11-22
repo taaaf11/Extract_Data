@@ -48,7 +48,52 @@ class ExtractData:
 
         return lines
     
-    def as_dict(self, key: int, *values) -> dict:
+    def set_json_indent(self, indent_level: int) -> None:
+        """
+        Set json indent
+        """
+        self.json_indent = indent_level
+    
+    @staticmethod
+    def _square_to_braces_json(squary_json_data: str) -> str:
+        """
+        Change square brackets to braces in json data, at the start and at the end, as a string
+        See comments in the as_json function
+        """
+        
+        squary_json_data = list(squary_json_data)
+        squary_json_data[0], squary_json_data[-1] = '{', '}'
+        braces_json_data = ''.join(squary_json_data)
+        
+        return braces_json_data
+    
+    @staticmethod
+    def _prep_dict(list1: list, list2: list) -> list:
+        """
+        Prepare a dictionary for json in as_json method defined below
+        It outputs a list with dictionaries in it. It works like:
+        
+        list1 = ["Name", "Food", "Age"]
+        list2  = [["Altaaf", "Samosa", "18"], ["Doe", "Burger", "45"], ["Hello", "Pizza", "0"]]
+        
+        _prep_dict(list1,list2) :
+        
+        [{'Name': 'Altaaf', 'Food': 'Samosa', 'Age': '18'}, {'Name': 'Doe', 'Food': 'Burger', 'Age': '45'},
+            {'Name': 'Hello', 'Food': 'Pizza', 'Age': '0'}]
+        """
+        
+        save_list = list()
+        
+        a_dict = {}
+        for list_ in list2:
+            for item in list1:
+                a_dict.update({item: list_[list1.index(item)]})
+            save_list.append(a_dict)
+            a_dict = {}
+        
+        return save_list
+    
+    def as_dicts(self, keys: list, *values) -> list:
         """
         SYNOPSIS: 
             obj.as_dict(key: int, *values)
@@ -66,34 +111,35 @@ class ExtractData:
             Added as a list
         """
         
-        dictionary = dict()
-
+        save_datas = list()
+        hold_dicts = list()
+        inner_dict = dict()
+        
         for line in self._into_lines():
             split_ed = line.split(self.separator)
-            dict_values = list()
+            list_values = list()
 
             for value in values:
-                if isinstance(value, str) and '-' in value: # range
-                    dict_values.append(split_ed[int(value.split('-')[0])-1: int(value.split('-')[1])])
-                    continue
-                dict_values.append(split_ed[value-1])
+                list_values.append(split_ed[value-1])
             
             if (self.trim_newline):
-                for dict_value in dict_values[0]:
+                for list_value in list_values:
                     
                      # as the line item containing '\n' will be in the last item of the line
                      # no need of any further filtering
-                    if dict_value[-1] == '\n':
-                        dict_values[0].append(dict_value[:-1])
-                        dict_values[0].remove(dict_value)
+                    if list_value[-1] == '\n':
+                        list_values.append(list_value[:-1])
+                        list_values.remove(list_value)
+            
+            save_datas.append(list_values)
+        
+        for i in range(len(keys)):
+            for j in range(len(save_datas[0])):
+                inner_dict.update({keys[j]: save_datas[i][j]})
+            hold_dicts.append(inner_dict)
+            inner_dict = {}
 
-            if len(dict_values) == 1:
-                dictionary.update({split_ed[key-1]: dict_values[0]})
-
-            else:
-                dictionary.update({split_ed[key-1]: dict_values})
-
-        return dictionary
+        return hold_dicts
 
     def as_list(self, item_num: int) -> list:
         """
@@ -132,36 +178,103 @@ class ExtractData:
         
         return tuple(self.as_list(item_num))
     
-    def set_json_indent(self, indent_level: int) -> None:
+    def as_json(self, fields: list, *values) -> str:
         """
-        Set json indent
-        """
-        self.json_indent = indent_level
-    
-    def as_json(self, key: int, *values):
-        """
-        SYNOPSIS: 
-            obj.as_json(key: int, *values)
+        SYNOPSIS:
+              obj.as_json(fields, *vales)
+              
+              -> The lenght of list should be equal to the length of asked items,
+                for establishing one-to-one correspondance for json fields and values
             
+              -> Adds to json data such that:
+                => Elements in the list appear as json fields
+                => Asked item numbers appear as json values
+            
+              -> Returns a string of json data
+        
         EXAMPLE:
-            obj.as_json(1, 2)
-            
-            Add first item of every line as a field and second as value in the value.
-            
-                                                OR
-            
-            obj.as_json(1, '2-3')
-            
-            Add first item of every line as a field and second and third item as values in the json value.
-            Added as list.
+              Suppose file data is:
+              
+              1,Altaaf,18,Programmer,Traveller,Pizza
+              2,David,36,Engineer,Gardener,Berries
+              
+              -> obj.as_json(["Name", "Age"], 2, 3)
+              
+              => Returns:
+                  {
+                      {
+                          "Name":  "Altaaf"
+                          "Age":  "18"
+                      },
+                      
+                      {
+                          "Name":  "David
+                          "Age":  "36"
+                      }
+                  }
+                  
+              -> obj.as_json(["Name"], 2)
+              
+              => Returns:
+                  {
+                      {
+                          "Name":  "Altaaf"
+                      },
+                      {
+                          "Name":  "David"
+                      }
+                  }
+                  
+              Note that this pretty printing is optional, and can be set be function
+              obj.set_json_indent(indent_level)
         """
         
-        # indenation is controlled by self.json_indent variable
-        if not (self.json_indent is None):
-            return json.dumps(self.as_dict(key, *values), indent=self.json_indent)
+        save_datas = list()
+        hold_dicts = list()
+        
+        for line in self._into_lines():
+            split_ed = line.split(self.separator)
+            list_values = list()
+
+            for value in values:
+                list_values.append(split_ed[value-1])
+            
+            if (self.trim_newline):
+                for list_value in list_values:
+                    
+                     # as the line item containing '\n' will be in the last item of the line
+                     # no need of any further filtering
+                    if list_value[-1] == '\n':
+                        list_values.append(list_value[:-1])
+                        list_values.remove(list_value)
+            
+            save_datas.append(list_values)
+                
+        hold_dicts = self._prep_dict(fields, save_datas)
+
+        # As hold_dicts variable is a list, we don't want square brackets in the start and at the end of
+        # our data
+        # Without replacing, data appears as:
+        
+        # [
+        #    {
+        #       ...
+        #    }
+        # ]
+        
+        # So, the solution is to replace the first and the last "character" of the data,
+        # obviously, as a string
+        # self._square_to_braces_json method does that for us
+        
+        if not (self.json_indent is None): # Indent level, self.json_indent can be set by set_json_indent method
+            prettier_json_data = list(json.dumps(hold_dicts, indent=self.json_indent))
+            prettier_json_data = self._square_to_braces_json(prettier_json_data)
+            return prettier_json_data
         
         else:
-            return json.dumps(self.as_dict(key, *values))
+            json_data = list(json.dumps(hold_dicts))
+            json_data = self._square_to_braces_json(json_data)
+            return json_data
     
     def close_(self) -> None:
         """
