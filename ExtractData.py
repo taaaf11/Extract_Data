@@ -65,7 +65,7 @@ class ExtractData:
     def _prep_dict(list1: list, list2: list) -> list:
         """
         Prepare a dictionary for json in as_json method defined below
-        It outputs a list with dictionaries in it. It works like this:
+        It outputs a list with dictionaries in it. Example:
         
         list1 = ["Name", "Food", "Age"]
         list2  = [["Altaaf", "Brownies", "18"], ["Doe", "Burger", "45"]]
@@ -182,7 +182,7 @@ class ExtractData:
         SYNOPSIS:
               obj.as_json(fields, *vales)
               
-              -> The lenght of list should be equal to the length of asked items,
+              -> The length of list should be equal to the length of asked items,
                 for establishing one-to-one correspondance for json fields and values
             
               -> Adds to json data such that:
