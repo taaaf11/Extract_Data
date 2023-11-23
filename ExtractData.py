@@ -265,12 +265,12 @@ class ExtractData:
         # self._square_to_braces_json method does that for us
         
         if not (self.json_indent is None): # Indent level, self.json_indent can be set by set_json_indent method
-            prettier_json_data = list(json.dumps(hold_dicts, indent=self.json_indent))
+            prettier_json_data = json.dumps(hold_dicts, indent=self.json_indent)
             prettier_json_data = self._square_to_braces_json(prettier_json_data)
             return prettier_json_data
         
         else:
-            json_data = list(json.dumps(hold_dicts))
+            json_data = json.dumps(hold_dicts)
             json_data = self._square_to_braces_json(json_data)
             return json_data
     
