@@ -99,21 +99,24 @@ class ExtractData:
             obj.as_dict(key: int, *values)
             
         EXAMPLE:
-            obj.as_dict(1, 2)
+            Suppose file data is:
+              
+            1,Altaaf,18,Programmer,Traveller,Pizza
+            2,David,36,Engineer,Gardener,Berries
             
-            Add first item of every line as a key and second as value in the dictionary.
+            -> obj.as_dict(["Name"], 2)
+            
+            ==> [{'Name': 'Altaaf'}, {'Name': 'David'}]
             
                                                 OR
             
-            obj.as_dict(1, '2-3')
+            obj.as_dict(["Name", "Age"], 2, 3)
             
-            Add first item of every line as a key and second-third item as values in the dictionary.
-            Added as a list
+            ==> [{'Name': 'Altaaf', 'Age': '18'}, {'Name': 'David', 'Age': '36'}]
         """
         
         save_datas = list()
         hold_dicts = list()
-        inner_dict = dict()
         
         for line in self._into_lines():
             split_ed = line.split(self.separator)
@@ -133,11 +136,7 @@ class ExtractData:
             
             save_datas.append(list_values)
         
-        for i in range(len(keys)):
-            for j in range(len(save_datas[0])):
-                inner_dict.update({keys[j]: save_datas[i][j]})
-            hold_dicts.append(inner_dict)
-            inner_dict = {}
+        hold_dicts = self._prep_dict(keys, save_datas)
 
         return hold_dicts
 
