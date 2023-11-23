@@ -48,12 +48,6 @@ class ExtractData:
 
         return lines
     
-    def set_json_indent(self, indent_level: int) -> None:
-        """
-        Set json indent
-        """
-        self.json_indent = indent_level
-    
     @staticmethod
     def _square_to_braces_json(squary_json_data: str) -> str:
         """
@@ -71,15 +65,15 @@ class ExtractData:
     def _prep_dict(list1: list, list2: list) -> list:
         """
         Prepare a dictionary for json in as_json method defined below
-        It outputs a list with dictionaries in it. It works like:
+        It outputs a list with dictionaries in it. It works like this:
         
         list1 = ["Name", "Food", "Age"]
-        list2  = [["Altaaf", "Samosa", "18"], ["Doe", "Burger", "45"], ["Hello", "Pizza", "0"]]
+        list2  = [["Altaaf", "Brownies", "18"], ["Doe", "Burger", "45"]]
         
         _prep_dict(list1,list2) :
         
-        [{'Name': 'Altaaf', 'Food': 'Samosa', 'Age': '18'}, {'Name': 'Doe', 'Food': 'Burger', 'Age': '45'},
-            {'Name': 'Hello', 'Food': 'Pizza', 'Age': '0'}]
+        [{'Name': 'Altaaf', 'Food': 'Brownies', 'Age': '18'},
+                {'Name': 'Doe', 'Food': 'Burger', 'Age': '45'}]
         """
         
         save_list = list()
@@ -177,6 +171,12 @@ class ExtractData:
         
         return tuple(self.as_list(item_num))
     
+    def set_json_indent(self, indent_level: int) -> None:
+        """
+        Set json indent
+        """
+        self.json_indent = indent_level
+    
     def as_json(self, fields: list, *values) -> str:
         """
         SYNOPSIS:
@@ -205,7 +205,6 @@ class ExtractData:
                           "Name":  "Altaaf"
                           "Age":  "18"
                       },
-                      
                       {
                           "Name":  "David
                           "Age":  "36"
