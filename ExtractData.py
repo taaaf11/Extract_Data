@@ -12,7 +12,7 @@ class ExtractData:
 
     -> Class for handling different methods of data extraction.
     """
-    def __init__(self, file_name, mode: str, separator: str, trim_newline: bool) -> None:
+    def __init__(self, file_name: str, mode: str, separator: str, trim_newline: bool) -> None:
         self.fd = open(file_name, mode)
         self.separator = separator
         self.trim_newline = trim_newline # remove the trailing newline character at the end of the
@@ -55,9 +55,9 @@ class ExtractData:
         See comments in the as_json function
         """
         
-        squary_json_data = list(squary_json_data)
-        squary_json_data[0], squary_json_data[-1] = '{', '}'
-        braces_json_data = ''.join(squary_json_data)
+        braces_json_data = list(squary_json_data)
+        braces_json_data[0], braces_json_data[-1] = '{', '}'
+        braces_json_data = ''.join(braces_json_data)
         
         return braces_json_data
     
@@ -280,6 +280,6 @@ class ExtractData:
         """
         self.fd.close()
     
-    def __eq__(self, __value: object) -> bool:
-        return (self.file == __value.file) and (self.mode == __value.mode)
+    def __eq__(self, other) -> bool:
+        return (self.fd == other.fd)
     
