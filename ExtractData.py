@@ -20,6 +20,27 @@ class ExtractData:
         
         self.json_indent = None # this variable is used cz problems occur when specified as parameter
                     # in as_json() function
+        
+        self.lines_skipped = None # skip lines in range while reading file
+    
+    def skip_lines(self, line_range: str) -> None:
+        """
+        Skip lines while reading file
+        
+        SYNOPSIS:
+            -> Skip a single line
+                skip_lines('2-2')
+            
+            => Skip line no 2
+            
+            -> Skip lines in range
+                skip_lines('1-5')
+            
+            => Skip lines 1 to 5
+        """
+        
+        split_ed = line_range.split('-') # "6-9" becomes ['6', '9']
+        self.lines_skipped = [int(i) for i in split_ed] # ['6', '9'] becomes [6, 9]
 
     # to be used inside the class
     # separates file data into lines
@@ -40,6 +61,16 @@ class ExtractData:
                 continue
             lines.append(line)
         
+        # using del keyword to delete list items is a pain...
+        # instead, initialize the list item with empty string
+        # then filter that list
+        if not (self.lines_skipped is None):
+            for line_number in range(self.lines_skipped[0] - 1, self.lines_skipped[1]):
+                lines[line_number] = ''
+        
+        # Filtering the list
+        lines = [line for line in lines if not line == '']
+                
         # reset the pointer to the start of the file in case of further function calls
         self.fd.seek(0)
         
@@ -62,7 +93,7 @@ class ExtractData:
         return braces_json_data
     
     @staticmethod
-    def _prep_dict(list1: list, list2: list) -> list:
+    def _prep_dicts(list1: list, list2: list) -> list:
         """
         Prepare a dictionary for json in as_json method defined below
         It outputs a list with dictionaries in it. Example:
@@ -70,7 +101,7 @@ class ExtractData:
         list1 = ["Name", "Food", "Age"]
         list2  = [["Altaaf", "Brownies", "18"], ["Doe", "Burger", "45"]]
         
-        _prep_dict(list1,list2) :
+        _prep_dicts(list1,list2) :
         
         [{'Name': 'Altaaf', 'Food': 'Brownies', 'Age': '18'},
                 {'Name': 'Doe', 'Food': 'Burger', 'Age': '45'}]
@@ -130,7 +161,7 @@ class ExtractData:
             
             save_datas.append(list_values)
         
-        hold_dicts = self._prep_dict(keys, save_datas)
+        hold_dicts = self._prep_dicts(keys, save_datas)
 
         return hold_dicts
 
@@ -248,7 +279,7 @@ class ExtractData:
             
             save_datas.append(list_values)
                 
-        hold_dicts = self._prep_dict(fields, save_datas)
+        hold_dicts = self._prep_dicts(fields, save_datas)
 
         # As hold_dicts variable is a list, we don't want square brackets in the start and at the end of
         # our data
