@@ -1,4 +1,4 @@
-import json
+import sys, json
 
 class ExtractData:
     """
@@ -21,15 +21,15 @@ class ExtractData:
         self.json_indent = None # this variable is used cz problems occur when specified as parameter
                     # in as_json() function
         
-        self.lines_skipped = None # skip lines in range while reading file
+        self.lines_to_skip = None # a list containing line numbers of lines to be skipped
     
-    def skip_lines(self, line_range: str) -> None:
+    def skip_lines(self, *line_numbers) -> None:
         """
         Skip lines while reading file
         
         SYNOPSIS:
             -> Skip a single line
-                skip_lines('2-2')
+                skip_lines(2)
             
             => Skip line no 2
             
@@ -37,10 +37,27 @@ class ExtractData:
                 skip_lines('1-5')
             
             => Skip lines 1 to 5
+            
+            -> Skip specific lines and also other lines in range
+                skip_lines(2, '9-15')
+            
+            => Skip lines 2, lines ranging from 9 to 15
         """
         
-        split_ed = line_range.split('-') # "6-9" becomes ['6', '9']
-        self.lines_skipped = [int(i) for i in split_ed] # ['6', '9'] becomes [6, 9]
+        lines_to_be_skipped = list()
+        
+        for spec_data in line_numbers:
+            if isinstance(spec_data, int):
+                lines_to_be_skipped.append(spec_data)
+            
+            elif isinstance(spec_data, str) and '-' in spec_data:
+                split_ed = spec_data.split('-')
+                for line_number in range(int(split_ed[0]), int(split_ed[1])+1):
+                    lines_to_be_skipped.append(line_number - 1)
+        
+        lines_to_be_skipped = sorted(set(lines_to_be_skipped))
+        
+        self.lines_to_skip = lines_to_be_skipped
 
     # to be used inside the class
     # separates file data into lines
@@ -62,20 +79,25 @@ class ExtractData:
             lines.append(line)
         
         # using del keyword to delete list items is a pain...
-        # instead, initialize the list item with empty string
+        # instead, initialize the list item with an empty string
         # then filter that list
-        if not (self.lines_skipped is None):
-            for line_number in range(self.lines_skipped[0] - 1, self.lines_skipped[1]):
+        if not (self.lines_to_skip is None):
+            for line_number in self.lines_to_skip:
                 lines[line_number] = ''
         
         # Filtering the list
-        lines = [line for line in lines if not line == '']
-                
-        # reset the pointer to the start of the file in case of further function calls
-        self.fd.seek(0)
+        lines = [line for line in lines if line != '']
+        
+        # If the list becomes empty after filtering, that is, if the user skipped all the lines
+        if len(lines) == 0:
+            print("Empty input. Exiting...", file=sys.stderr)
+            exit(1)
         
         if lines[-1] == '':
             lines.pop()
+        
+        # reset the file pointer to the start of the file in case of further function calls
+        self.fd.seek(0)
 
         return lines
     
