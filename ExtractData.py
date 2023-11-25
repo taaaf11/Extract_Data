@@ -12,8 +12,8 @@ class ExtractData:
 
     -> Class for handling different methods of data extraction.
     """
-    def __init__(self, file_name: str, mode: str, separator: str, trim_newline: bool) -> None:
-        self.fd = open(file_name, mode)
+    def __init__(self, file_name: str, mode: str, separator: str, trim_newline: bool = True, encoding: str = 'UTF-8') -> None:
+        self.fd = open(file_name, mode, encoding=encoding)
         self.separator = separator
         self.trim_newline = trim_newline # remove the trailing newline character at the end of the
                 # last item of the line, if the item is included
@@ -74,7 +74,10 @@ class ExtractData:
             line = self.fd.readline()
             if not line:
                 eof = True
-            if line == '\n': # line is empty
+            if line == '\n' or line == '': # line is empty
+                continue
+            if self.trim_newline and line[-1] == '\n':
+                lines.append(line[:-1])
                 continue
             lines.append(line)
         
@@ -92,9 +95,6 @@ class ExtractData:
         if len(lines) == 0:
             print("Empty input. Exiting...", file=sys.stderr)
             exit(1)
-        
-        if lines[-1] == '':
-            lines.pop()
         
         # reset the file pointer to the start of the file in case of further function calls
         self.fd.seek(0)
@@ -171,15 +171,6 @@ class ExtractData:
 
             for value in values:
                 list_values.append(split_ed[value-1])
-            
-            if (self.trim_newline):
-                for list_value in list_values:
-                    
-                     # as the line item containing '\n' will be in the last item of the line
-                     # no need of any further filtering
-                    if list_value[-1] == '\n':
-                        list_values.append(list_value[:-1])
-                        list_values.remove(list_value)
             
             save_datas.append(list_values)
         
@@ -289,15 +280,6 @@ class ExtractData:
 
             for value in values:
                 list_values.append(split_ed[value-1])
-            
-            if (self.trim_newline):
-                for list_value in list_values:
-                    
-                     # as the line item containing '\n' will be in the last item of the line
-                     # no need of any further filtering
-                    if list_value[-1] == '\n':
-                        list_values.append(list_value[:-1])
-                        list_values.remove(list_value)
             
             save_datas.append(list_values)
                 
