@@ -267,7 +267,7 @@ class ExtractData:
                       }
                   }
                   
-              Note that this pretty printing is optional, and can be set be function
+              Note that this pretty printing is optional, and can be set by function
               obj.set_json_indent(indent_level)
         """
         
