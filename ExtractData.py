@@ -48,7 +48,7 @@ class ExtractData:
         
         for spec_data in line_numbers:
             if isinstance(spec_data, int):
-                lines_to_be_skipped.append(spec_data)
+                lines_to_be_skipped.append(spec_data - 1)
             
             elif isinstance(spec_data, str) and '-' in spec_data:
                 split_ed = spec_data.split('-')
